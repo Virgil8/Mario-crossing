@@ -292,8 +292,14 @@ function updateDayNight() {
 
   sunLight.intensity = intensity;
   hemiLight.intensity = ambientIntensity;
-  scene.background = new THREE.Color(skyColor);
+  // On teinte le brouillard selon l'heure, le ciel reste un dégradé
   scene.fog.color = new THREE.Color(fogColor);
+  // Teinter la scène selon la luminosité (sans écraser le ciel)
+  if (scene.background && scene.background.isTexture) {
+    // ok, on garde le dégradé
+  } else {
+    scene.background = new THREE.Color(skyColor);
+  }
 }
 
 function lerpColor(a, b, t) {
@@ -344,9 +350,14 @@ function updateWorldAnimations(time) {
     }
   }
 
-  // NPCs : petit idle
+  // NPCs : bob doux (le billboard s'occupe de la rotation caméra)
   for (const n of NPCS_3D) {
-    n.mesh.position.y = Math.sin(time * 0.002 + n.idleTimer) * 0.04;
+    if (n.mesh.userData.billboard) {
+      const bob = Math.sin(time * 0.002 + n.idleTimer) * 0.05;
+      n.mesh.userData.billboard.position.y = n.mesh.userData.height / 2 + bob;
+    } else {
+      n.mesh.position.y = Math.sin(time * 0.002 + n.idleTimer) * 0.04;
+    }
   }
 }
 
@@ -435,6 +446,7 @@ function loop3D(time) {
   updateCamera(dt);
   updateDayNight();
   updateWorldAnimations(time);
+  updateBillboards();
   updateHUD();
 
   renderer.render(scene, camera);

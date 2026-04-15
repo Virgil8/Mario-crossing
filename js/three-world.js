@@ -460,20 +460,20 @@ function buildWorld(scene) {
   }
 }
 
-// Dispatcher : crée le bon modèle selon le PNJ
+// Dispatcher : utilise les sprites Paper-Mario pour chaque PNJ
 function buildNPCMesh(id, fallbackColors) {
   switch (id) {
-    case 'mario':    return buildMario();
-    case 'luigi':    return buildLuigi();
-    case 'wario':    return buildWario();
-    case 'peach':    return buildPeach();
-    case 'daisy':    return buildDaisy();
-    case 'toad':     return buildToadChar();
-    case 'yoshi':    return buildYoshiChar();
-    case 'bowser':   return buildBowserChar(1.2);
-    case 'bowserjr': return buildBowserJr();
-    case 'dk':       return buildGorilla();
-    case 'shyguy':   return buildShyGuyChar();
+    case 'mario':    return buildMarioSprite();
+    case 'luigi':    return buildLuigiSprite();
+    case 'wario':    return buildWarioSprite();
+    case 'peach':    return buildPeachSprite();
+    case 'daisy':    return buildDaisySprite();
+    case 'toad':     return buildToadSprite();
+    case 'yoshi':    return buildYoshiSprite();
+    case 'bowser':   return buildBowserSprite();
+    case 'bowserjr': return buildBowserJrSprite();
+    case 'dk':       return buildDKSprite();
+    case 'shyguy':   return buildShyGuySprite();
     default:         return buildCharacter(fallbackColors);
   }
 }

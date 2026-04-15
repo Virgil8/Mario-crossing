@@ -49,8 +49,8 @@ function init3D() {
   const canvas = document.getElementById('game');
 
   scene = new THREE.Scene();
-  scene.background = new THREE.Color(PAL3D.sky);
-  scene.fog = new THREE.Fog(PAL3D.sky, 55, 110);
+  scene.background = makeSkyGradient();
+  scene.fog = new THREE.Fog(0xb0dff0, 55, 110);
 
   camera = new THREE.PerspectiveCamera(55, 768 / 576, 0.1, 300);
 
@@ -84,8 +84,8 @@ function init3D() {
   // Monde
   buildWorld(scene);
 
-  // Joueur : vrai Mario
-  playerMesh = buildMario();
+  // Joueur : sprite Paper-Mario de Mario
+  playerMesh = buildMarioSprite();
   scene.add(playerMesh);
 
   clock = new THREE.Clock();
@@ -316,10 +316,36 @@ function updatePlayer(dt) {
   player.rotY += diff * Math.min(1, dt * 12);
 
   playerMesh.position.set(player.x, 0, player.z);
-  playerMesh.rotation.y = player.rotY;
+  // Les sprites-billboards ne tournent pas avec le joueur (ils font face à la caméra)
+  // Le bob est géré par bobSprite
+  bobSprite(playerMesh, performance.now(), moving);
+}
 
-  // Animation marche
-  animateWalk(playerMesh, performance.now(), moving, input3D.run ? 1.6 : 1);
+// Tous les sprites doivent faire face à la caméra sur Y
+function updateBillboards() {
+  scene.traverse(o => {
+    if (o.userData && o.userData.billboard) {
+      const dx = camera.position.x - o.position.x;
+      const dz = camera.position.z - o.position.z;
+      o.rotation.y = Math.atan2(dx, dz);
+    }
+  });
+}
+
+// Ciel dégradé (bleu -> bleu clair -> jaune chaud au sol)
+function makeSkyGradient() {
+  const c = document.createElement('canvas');
+  c.width = 16; c.height = 512;
+  const ctx = c.getContext('2d');
+  const g = ctx.createLinearGradient(0, 0, 0, 512);
+  g.addColorStop(0, '#4a9fd8');
+  g.addColorStop(0.45, '#87ceeb');
+  g.addColorStop(0.7, '#c8e8f4');
+  g.addColorStop(0.85, '#ffe4a8');
+  g.addColorStop(1, '#ffc080');
+  ctx.fillStyle = g;
+  ctx.fillRect(0, 0, 16, 512);
+  return new THREE.CanvasTexture(c);
 }
 
 // ============================================
