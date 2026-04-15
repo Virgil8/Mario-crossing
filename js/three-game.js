@@ -50,7 +50,7 @@ function init3D() {
 
   scene = new THREE.Scene();
   scene.background = new THREE.Color(PAL3D.sky);
-  scene.fog = new THREE.Fog(PAL3D.sky, 35, 65);
+  scene.fog = new THREE.Fog(PAL3D.sky, 55, 110);
 
   camera = new THREE.PerspectiveCamera(55, 768 / 576, 0.1, 300);
 
@@ -70,8 +70,8 @@ function init3D() {
   sunLight.castShadow = true;
   sunLight.shadow.mapSize.set(2048, 2048);
   const sc = sunLight.shadow.camera;
-  sc.left = -25; sc.right = 25; sc.top = 25; sc.bottom = -25;
-  sc.near = 0.1; sc.far = 80;
+  sc.left = -50; sc.right = 50; sc.top = 50; sc.bottom = -50;
+  sc.near = 0.1; sc.far = 150;
   scene.add(sunLight);
 
   // Monde

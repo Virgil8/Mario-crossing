@@ -519,16 +519,128 @@ function buildCharacter({ cap, shirt, pants, skin, variant }) {
     g.add(logoBg);
   }
 
-  // Dinosaure Yoshi : queue + crête
+  // Dinosaure Yoshi : queue + crête + narines
   if (variant === 'yoshi') {
     const tail = cyl(0.1, 0.2, 0.5, shirt, 8);
     tail.position.set(0, 0.8, -0.3);
     tail.rotation.x = Math.PI / 3;
     g.add(tail);
-    const shell = sphere(0.28, PAL3D.white, 10);
+    const shell = sphere(0.3, 0xff8040, 10);
     shell.scale.y = 0.5;
-    shell.position.set(0, 0.9, -0.2);
+    shell.position.set(0, 1.0, -0.15);
     g.add(shell);
+    // museau
+    const snout = new THREE.Mesh(
+      new THREE.SphereGeometry(0.2, 10, 8),
+      mat(skin)
+    );
+    snout.position.set(0, 1.35, 0.3);
+    g.add(snout);
+    // narines
+    for (const nx of [-0.06, 0.06]) {
+      const nostril = sphere(0.025, 0x000000, 4);
+      nostril.position.set(nx, 1.4, 0.45);
+      g.add(nostril);
+    }
+  }
+
+  // Bowser : carapace + cornes + pics
+  if (variant === 'bowser') {
+    // Carapace verte dans le dos
+    const shell = new THREE.Mesh(
+      new THREE.SphereGeometry(0.5, 12, 10, 0, Math.PI * 2, 0, Math.PI / 2),
+      mat(0x2a7a1a)
+    );
+    shell.rotation.x = Math.PI;
+    shell.position.set(0, 0.95, -0.28);
+    g.add(shell);
+    // Pics sur carapace (blancs)
+    for (let i = 0; i < 6; i++) {
+      const sx = (i % 3 - 1) * 0.2;
+      const sy = 0.8 + Math.floor(i / 3) * 0.25;
+      const spike = new THREE.Mesh(
+        new THREE.ConeGeometry(0.07, 0.2, 4),
+        mat(PAL3D.white)
+      );
+      spike.position.set(sx, sy, -0.55);
+      spike.rotation.x = -Math.PI / 2;
+      g.add(spike);
+    }
+    // Cornes sur la tête (blanches)
+    for (const hx of [-0.2, 0.2]) {
+      const horn = new THREE.Mesh(
+        new THREE.ConeGeometry(0.06, 0.25, 6),
+        mat(PAL3D.white)
+      );
+      horn.position.set(hx, 1.7, 0.05);
+      horn.rotation.z = hx > 0 ? -0.3 : 0.3;
+      g.add(horn);
+    }
+    // Crinière rouge
+    const mane = sphere(0.28, 0xc02020, 10);
+    mane.position.set(0, 1.45, -0.1);
+    mane.scale.set(1.1, 0.9, 1.1);
+    g.add(mane);
+    // Bracelets à pics
+    for (const bx of [-0.36, 0.36]) {
+      const cuff = cyl(0.13, 0.13, 0.12, 0x1a1a1a, 8);
+      cuff.position.set(bx, 0.72, 0);
+      g.add(cuff);
+      for (let i = 0; i < 3; i++) {
+        const a = (i / 3) * Math.PI * 2;
+        const sp = new THREE.Mesh(
+          new THREE.ConeGeometry(0.04, 0.1, 4),
+          mat(PAL3D.white)
+        );
+        sp.position.set(bx + Math.cos(a) * 0.15, 0.72, Math.sin(a) * 0.15);
+        sp.rotation.z = Math.PI / 2;
+        g.add(sp);
+      }
+    }
+    // Dents
+    const fangL = new THREE.Mesh(new THREE.ConeGeometry(0.03, 0.08, 4), mat(PAL3D.white));
+    fangL.position.set(-0.06, 1.24, 0.28);
+    fangL.rotation.x = Math.PI;
+    g.add(fangL);
+    const fangR = new THREE.Mesh(new THREE.ConeGeometry(0.03, 0.08, 4), mat(PAL3D.white));
+    fangR.position.set(0.06, 1.24, 0.28);
+    fangR.rotation.x = Math.PI;
+    g.add(fangR);
+  }
+
+  // Daisy / Rosalina : robe longue
+  if (variant === 'princess' || variant === 'daisy') {
+    const dress = new THREE.Mesh(
+      new THREE.ConeGeometry(0.5, 0.8, 12, 1, true),
+      mat(shirt)
+    );
+    dress.position.y = 0.5;
+    g.add(dress);
+    const hair = sphere(0.32, variant === 'daisy' ? 0xc04020 : PAL3D.yellow, 10);
+    hair.position.set(0, 1.4, -0.08);
+    hair.scale.set(1.05, 1.1, 1.05);
+    g.add(hair);
+  }
+
+  // Donkey Kong : poitrail large + cravate rouge
+  if (variant === 'dk') {
+    const chest = sphere(0.42, PAL3D.skin, 10);
+    chest.position.set(0, 0.95, 0.08);
+    chest.scale.set(1.2, 1, 0.8);
+    g.add(chest);
+    const tie = box(0.18, 0.3, 0.04, PAL3D.red);
+    tie.position.set(0, 1.05, 0.24);
+    g.add(tie);
+    const tieKnot = box(0.12, 0.1, 0.04, PAL3D.red);
+    tieKnot.position.set(0, 1.2, 0.24);
+    g.add(tieKnot);
+    // Logo "DK" jaune
+    const dkBadge = new THREE.Mesh(
+      new THREE.CircleGeometry(0.06, 12),
+      mat(PAL3D.block)
+    );
+    dkBadge.position.set(0, 1.2, 0.27);
+    g.add(dkBadge);
   }
 
   g.traverse(o => { if (o.isMesh) o.castShadow = true; });

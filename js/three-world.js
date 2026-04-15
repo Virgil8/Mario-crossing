@@ -2,7 +2,7 @@
    three-world.js - Génération du monde 3D + PNJ + colliders
    ===================================================== */
 
-const WORLD_SIZE = 50;
+const WORLD_SIZE = 90;
 const COLLIDERS = [];     // { x, z, radius, type, ref? }
 const NPCS_3D = [];       // { id, name, dialogs, shop, mesh, x, z, ... }
 const TREES_3D = [];      // { mesh, x, z, shaken, regrowAt }
@@ -20,32 +20,39 @@ function buildWorld(scene) {
   WATER_AREAS.length = 0;
   TILLED_AREAS.length = 0;
 
-  // ---------- Sol en herbe ----------
-  const groundGeo = new THREE.PlaneGeometry(WORLD_SIZE, WORLD_SIZE, 32, 32);
-  // Subtile variation de relief
+  // Initialise les textures procédurales
+  initTextures();
+
+  // ---------- Sol en herbe texturée ----------
+  const groundGeo = new THREE.PlaneGeometry(WORLD_SIZE, WORLD_SIZE, 60, 60);
   const pos = groundGeo.attributes.position;
   for (let i = 0; i < pos.count; i++) {
     const x = pos.getX(i), y = pos.getY(i);
-    pos.setZ(i, Math.sin(x * 0.3) * 0.05 + Math.cos(y * 0.25) * 0.05);
+    pos.setZ(i,
+      Math.sin(x * 0.15) * 0.15 +
+      Math.cos(y * 0.12) * 0.15 +
+      Math.sin((x + y) * 0.08) * 0.1
+    );
   }
   groundGeo.computeVertexNormals();
-  const ground = new THREE.Mesh(groundGeo, mat(PAL3D.grass));
+  const ground = new THREE.Mesh(groundGeo, texMat(TEX.grass));
   ground.rotation.x = -Math.PI / 2;
   ground.receiveShadow = true;
   scene.add(ground);
 
-  // ---------- Chemins en croix ----------
-  const pathMat = mat(PAL3D.path);
-  const pathH = new THREE.Mesh(new THREE.PlaneGeometry(WORLD_SIZE, 3), pathMat);
+  // ---------- Chemins en croix (texture pierre) ----------
+  const pathMat = texMat(TEX.stone);
+  const pathH = new THREE.Mesh(new THREE.PlaneGeometry(WORLD_SIZE, 4), pathMat);
   pathH.rotation.x = -Math.PI / 2;
   pathH.position.y = 0.02;
   pathH.receiveShadow = true;
   scene.add(pathH);
-  const pathV = new THREE.Mesh(new THREE.PlaneGeometry(3, WORLD_SIZE), pathMat);
+  const pathV = new THREE.Mesh(new THREE.PlaneGeometry(4, WORLD_SIZE), pathMat);
   pathV.rotation.x = -Math.PI / 2;
   pathV.position.y = 0.02;
   pathV.receiveShadow = true;
   scene.add(pathV);
+  TEX.stone.repeat.set(WORLD_SIZE / 4, 1);
 
   // Place centrale (chemin plus large)
   const plaza = new THREE.Mesh(new THREE.CircleGeometry(4, 24), pathMat);
@@ -54,28 +61,40 @@ function buildWorld(scene) {
   plaza.receiveShadow = true;
   scene.add(plaza);
 
-  // ---------- Étang (zone de pêche) ----------
-  const pondX = -12, pondZ = -10, pondR = 4;
-
-  // Sable autour
-  const sandGeo = new THREE.CircleGeometry(pondR + 1, 24);
-  const sand = new THREE.Mesh(sandGeo, mat(PAL3D.sand));
+  // ---------- Grand lac ----------
+  const pondX = -22, pondZ = -14, pondR = 7;
+  const sand = new THREE.Mesh(new THREE.CircleGeometry(pondR + 1.5, 32), texMat(TEX.sand));
   sand.rotation.x = -Math.PI / 2;
   sand.position.set(pondX, 0.025, pondZ);
+  sand.receiveShadow = true;
   scene.add(sand);
-
-  // Eau
-  const pondGeo = new THREE.CircleGeometry(pondR, 32);
-  const pondMat = mat(PAL3D.water, { transparent: true, opacity: 0.88 });
-  const pond = new THREE.Mesh(pondGeo, pondMat);
+  const pondMat = texMat(TEX.water, { transparent: true, opacity: 0.85 });
+  const pond = new THREE.Mesh(new THREE.CircleGeometry(pondR, 48), pondMat);
   pond.rotation.x = -Math.PI / 2;
   pond.position.set(pondX, 0.04, pondZ);
   pond.userData.isWater = true;
   scene.add(pond);
   WATER_AREAS.push({ x: pondX, z: pondZ, radius: pondR, mesh: pond });
 
-  // ---------- Village de tuyaux (zone nord) ----------
-  const pipeSpots = [[-2, -16, 2.5], [0, -16, 3.2], [2, -16, 2.5]];
+  // Petit étang à l'est
+  const pond2Mat = texMat(TEX.water, { transparent: true, opacity: 0.85 });
+  const pond2 = new THREE.Mesh(new THREE.CircleGeometry(3, 32), pond2Mat);
+  pond2.rotation.x = -Math.PI / 2;
+  pond2.position.set(25, 0.04, 18);
+  pond2.userData.isWater = true;
+  scene.add(pond2);
+  WATER_AREAS.push({ x: 25, z: 18, radius: 3, mesh: pond2 });
+  const sand2 = new THREE.Mesh(new THREE.CircleGeometry(4, 24), texMat(TEX.sand));
+  sand2.rotation.x = -Math.PI / 2;
+  sand2.position.set(25, 0.025, 18);
+  scene.add(sand2);
+
+  // ---------- Village de tuyaux (zone nord, 5 tailles) ----------
+  const pipeSpots = [
+    [-5, -20, 2.0], [-2.5, -20, 2.8], [0, -20, 3.5],
+    [2.5, -20, 2.8], [5, -20, 2.0],
+    [-30, 10, 3.0], [30, -5, 2.5]
+  ];
   for (const [x, z, h] of pipeSpots) {
     const p = buildPipe(h);
     p.position.set(x, 0, z);
@@ -105,66 +124,149 @@ function buildWorld(scene) {
     scene.add(b);
   }
 
-  // ---------- Zone ferme (SE) avec parcelles labourées ----------
-  const farmMat = mat(PAL3D.dirt);
-  for (let i = 0; i < 3; i++) {
-    for (let j = 0; j < 3; j++) {
-      const dirt = new THREE.Mesh(new THREE.PlaneGeometry(1.2, 1.2), farmMat);
+  // ---------- Zone ferme avec parcelles labourées texturées ----------
+  const farmMat = texMat(TEX.dirt);
+  for (let i = 0; i < 4; i++) {
+    for (let j = 0; j < 4; j++) {
+      const dirt = new THREE.Mesh(new THREE.PlaneGeometry(1.3, 1.3), farmMat);
       dirt.rotation.x = -Math.PI / 2;
-      const x = 10 + i * 1.5, z = 10 + j * 1.5;
+      const x = 14 + i * 1.6, z = 10 + j * 1.6;
       dirt.position.set(x, 0.03, z);
       dirt.receiveShadow = true;
       scene.add(dirt);
       TILLED_AREAS.push({ x, z, mesh: dirt });
     }
   }
+  // Barrière en bois autour de la ferme
+  const fenceMat = texMat(TEX.wood);
+  for (let x = 13; x <= 21; x += 1) {
+    const post = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.8, 0.15), fenceMat);
+    post.position.set(x, 0.4, 8.5);
+    scene.add(post);
+    const post2 = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.8, 0.15), fenceMat);
+    post2.position.set(x, 0.4, 17);
+    scene.add(post2);
+  }
+  for (let z = 8.5; z <= 17; z += 1) {
+    const post = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.8, 0.15), fenceMat);
+    post.position.set(13, 0.4, z);
+    scene.add(post);
+    const post2 = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.8, 0.15), fenceMat);
+    post2.position.set(21, 0.4, z);
+    scene.add(post2);
+  }
 
-  // ---------- Arbres ----------
-  const treeSpots = [
-    [-18, -18], [-15, -15], [-20, -8], [-18, 0], [-15, 8],
-    [-10, 15], [-5, 18], [5, 18], [12, 15], [18, 10],
-    [20, 0], [18, -8], [15, -15], [8, -18], [-3, -18],
-    [-22, 5], [22, 5], [-10, -22], [10, -22],
-    [16, 18], [-16, 18], [0, 20], [-20, 15]
-  ];
-  for (const [x, z] of treeSpots) {
-    // éviter chemins et étang
-    if (Math.abs(x) < 2.5 && Math.abs(z) < 25) continue;
-    if (Math.abs(z) < 2.5 && Math.abs(x) < 25) continue;
-    if (Math.hypot(x - pondX, z - pondZ) < pondR + 1.5) continue;
+  // ---------- Forêt d'arbres (densité accrue) ----------
+  const rngT = mulberry32(123);
+  for (let i = 0; i < 80; i++) {
+    const x = (rngT() - 0.5) * (WORLD_SIZE - 8);
+    const z = (rngT() - 0.5) * (WORLD_SIZE - 8);
+    if (Math.abs(x) < 3 && Math.abs(z) < WORLD_SIZE / 2) continue;
+    if (Math.abs(z) < 3 && Math.abs(x) < WORLD_SIZE / 2) continue;
+    if (Math.hypot(x - pondX, z - pondZ) < pondR + 2) continue;
+    if (Math.hypot(x - 25, z - 18) < 5) continue; // étang 2
+    // Éviter proche des zones de bâtiments (nous les ajoutons plus bas)
+    if (Math.hypot(x - 20, z + 25) < 10) continue; // château Peach
+    if (Math.hypot(x + 25, z - 30) < 8) continue; // château Bowser
+    if (Math.hypot(x + 15, z + 10) < 7) continue; // maison Mario
+    if (Math.hypot(x - 30, z + 20) < 7) continue; // manoir Luigi
+    // Ferme
+    if (x > 12 && x < 22 && z > 8 && z < 18) continue;
     const tree = buildTree();
     tree.position.set(x, 0, z);
+    tree.scale.setScalar(0.8 + rngT() * 0.5);
+    tree.rotation.y = rngT() * Math.PI * 2;
     scene.add(tree);
     const entry = { mesh: tree, x, z, shaken: false, regrowAt: 0, shakeUntil: 0 };
     TREES_3D.push(entry);
     COLLIDERS.push({ x, z, radius: 0.5, type: 'tree', ref: entry });
   }
 
-  // ---------- Fleurs ----------
+  // Petit PRNG utilitaire
+  function mulberry32(a) {
+    return function () {
+      let t = (a += 0x6D2B79F5);
+      t = Math.imul(t ^ (t >>> 15), t | 1);
+      t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  // ---------- Fleurs (en clusters) ----------
   const flowerColors = [PAL3D.red, PAL3D.yellow, PAL3D.pink, 0x80c8ff, 0xd080ff, PAL3D.white];
-  for (let i = 0; i < 80; i++) {
-    const x = (Math.random() - 0.5) * 44;
-    const z = (Math.random() - 0.5) * 44;
-    if (Math.abs(x) < 2 || Math.abs(z) < 2) continue;
-    if (Math.hypot(x - pondX, z - pondZ) < pondR + 1) continue;
-    if (Math.hypot(x, z) < 4) continue;
+  for (let cluster = 0; cluster < 25; cluster++) {
+    const cx = (Math.random() - 0.5) * (WORLD_SIZE - 6);
+    const cz = (Math.random() - 0.5) * (WORLD_SIZE - 6);
+    if (Math.abs(cx) < 3 || Math.abs(cz) < 3) continue;
+    if (Math.hypot(cx - pondX, cz - pondZ) < pondR + 1.5) continue;
+    const c = flowerColors[Math.floor(Math.random() * flowerColors.length)];
+    for (let j = 0; j < 6; j++) {
+      const f = buildFlower(c);
+      f.position.set(cx + (Math.random() - 0.5) * 2.5, 0, cz + (Math.random() - 0.5) * 2.5);
+      f.scale.setScalar(0.8 + Math.random() * 0.5);
+      scene.add(f);
+    }
+  }
+  // Fleurs isolées
+  for (let i = 0; i < 40; i++) {
+    const x = (Math.random() - 0.5) * (WORLD_SIZE - 6);
+    const z = (Math.random() - 0.5) * (WORLD_SIZE - 6);
+    if (Math.abs(x) < 2.5 || Math.abs(z) < 2.5) continue;
     const c = flowerColors[Math.floor(Math.random() * flowerColors.length)];
     const f = buildFlower(c);
     f.position.set(x, 0, z);
     scene.add(f);
   }
 
-  // ---------- Nuages dans le ciel ----------
-  for (let i = 0; i < 10; i++) {
+  // ---------- Rochers ----------
+  for (let i = 0; i < 12; i++) {
+    const x = (Math.random() - 0.5) * (WORLD_SIZE - 6);
+    const z = (Math.random() - 0.5) * (WORLD_SIZE - 6);
+    if (Math.abs(x) < 4 || Math.abs(z) < 4) continue;
+    if (Math.hypot(x - pondX, z - pondZ) < pondR + 1) continue;
+    const rock = new THREE.Mesh(
+      new THREE.DodecahedronGeometry(0.5 + Math.random() * 0.6),
+      mat(0x888888)
+    );
+    rock.position.set(x, 0.3, z);
+    rock.rotation.set(Math.random(), Math.random(), Math.random());
+    rock.castShadow = true;
+    scene.add(rock);
+    COLLIDERS.push({ x, z, radius: 0.7, type: 'rock' });
+  }
+
+  // ---------- Nuages (plus nombreux, plus haut) ----------
+  for (let i = 0; i < 16; i++) {
     const c = buildCloud();
     c.position.set(
-      (Math.random() - 0.5) * 80,
-      12 + Math.random() * 6,
-      (Math.random() - 0.5) * 80
+      (Math.random() - 0.5) * 120,
+      15 + Math.random() * 8,
+      (Math.random() - 0.5) * 120
     );
-    c.userData.speed = 0.002 + Math.random() * 0.004;
+    c.userData.speed = 0.002 + Math.random() * 0.005;
     c.userData.isCloud = true;
     scene.add(c);
+  }
+
+  // ---------- Lampadaires ----------
+  const lampSpots = [[-6, -6], [6, -6], [-6, 6], [6, 6], [-15, 0], [15, 0], [0, -15], [0, 15]];
+  for (const [x, z] of lampSpots) {
+    const base = cyl(0.15, 0.2, 0.3, 0x333333, 8);
+    base.position.set(x, 0.15, z);
+    scene.add(base);
+    const pole = cyl(0.08, 0.08, 2.5, 0x222222, 8);
+    pole.position.set(x, 1.5, z);
+    scene.add(pole);
+    const lantern = sphere(0.3, 0xffffa0, 10);
+    lantern.material.emissive = new THREE.Color(0xffaa00);
+    lantern.material.emissiveIntensity = 0.4;
+    lantern.position.set(x, 2.9, z);
+    scene.add(lantern);
+    lantern.userData.isLantern = true;
+    const pl = new THREE.PointLight(0xffcc66, 0.5, 8);
+    pl.position.set(x, 2.9, z);
+    pl.userData.isLampLight = true;
+    scene.add(pl);
   }
 
   // ---------- Collines à l'horizon ----------
@@ -201,21 +303,56 @@ function buildWorld(scene) {
     DROPS_3D.push({ kind: 'coin', mesh: c, x, z, spawnedAt: 0 });
   }
 
-  // ---------- Maisons (cubes décoratifs avec toit) ----------
-  buildHouse(scene, 15, -15, PAL3D.red);
-  buildHouse(scene, -16, 13, 0xffb6d9);
-  buildHouse(scene, 18, 18, 0x6fd068);
+  // ---------- Bâtiments emblématiques ----------
+  const peachCastle = buildPeachCastle();
+  peachCastle.position.set(20, 0, 25);
+  peachCastle.rotation.y = -Math.PI / 2;
+  scene.add(peachCastle);
+  COLLIDERS.push({ x: 20, z: 25, radius: 5, type: 'building' });
+
+  const bowserCastle = buildBowserCastle();
+  bowserCastle.position.set(-28, 0, -30);
+  bowserCastle.rotation.y = Math.PI / 4;
+  scene.add(bowserCastle);
+  COLLIDERS.push({ x: -28, z: -30, radius: 7, type: 'building' });
+
+  const marioHouse = buildMarioHouse();
+  marioHouse.position.set(-15, 0, 10);
+  marioHouse.rotation.y = -0.3;
+  scene.add(marioHouse);
+  COLLIDERS.push({ x: -15, z: 10, radius: 2.5, type: 'building' });
+
+  const luigiMansion = buildLuigiMansion();
+  luigiMansion.position.set(-32, 0, 20);
+  luigiMansion.rotation.y = 0.4;
+  scene.add(luigiMansion);
+  COLLIDERS.push({ x: -32, z: 20, radius: 3, type: 'building' });
+
+  const toadHouse = buildToadHouse();
+  toadHouse.position.set(0, 0, -12);
+  scene.add(toadHouse);
+  COLLIDERS.push({ x: 0, z: -12, radius: 2.5, type: 'building' });
+
+  const yoshiHouse = buildYoshiEggHouse();
+  yoshiHouse.position.set(32, 0, 10);
+  scene.add(yoshiHouse);
+  COLLIDERS.push({ x: 32, z: 10, radius: 2.8, type: 'building' });
 
   // ---------- Panneaux indicateurs ----------
-  addSign(scene, 3, 0, "🍄 Place du village");
-  addSign(scene, -5, -8, "🐟 Étang");
-  addSign(scene, 8, 8, "🌱 Ferme");
-  addSign(scene, 0, -11, "🏪 Boutique");
+  addSign(scene, 4, 0, "🍄 Place centrale");
+  addSign(scene, -17, -10, "🐟 Grand Lac");
+  addSign(scene, 12, 8, "🌱 Ferme");
+  addSign(scene, 0, -8, "🏪 Boutique de Toad");
+  addSign(scene, 14, 20, "👑 Château de Peach");
+  addSign(scene, -20, -22, "🔥 Château de Bowser");
+  addSign(scene, -10, 8, "🔴 Maison de Mario");
+  addSign(scene, -26, 16, "👻 Manoir de Luigi");
+  addSign(scene, 28, 8, "🦖 Maison de Yoshi");
 
   // ---------- PNJ ----------
   const npcDefs = [
     {
-      id: 'toad', name: 'Toad', x: 0, z: -11.5,
+      id: 'toad', name: 'Toad', x: 0, z: -9,
       colors: { cap: PAL3D.red, shirt: PAL3D.white, pants: 0xa03030, skin: PAL3D.skin, variant: 'toad' },
       dialogs: [
         "Bienvenue à la boutique ! Je rachète tes trouvailles à bon prix.",
@@ -225,7 +362,7 @@ function buildWorld(scene) {
       shop: true
     },
     {
-      id: 'luigi', name: 'Luigi', x: -8, z: 3,
+      id: 'luigi', name: 'Luigi', x: -28, z: 18,
       colors: { cap: 0x2e8b2e, shirt: 0x2e8b2e, pants: PAL3D.blue, skin: PAL3D.skin },
       dialogs: [
         "Mamma mia, quel temps magnifique !",
@@ -234,7 +371,7 @@ function buildWorld(scene) {
       ]
     },
     {
-      id: 'peach', name: 'Peach', x: 8, z: -3,
+      id: 'peach', name: 'Peach', x: 16, z: 22,
       colors: { cap: PAL3D.pink, shirt: PAL3D.pink, pants: PAL3D.yellow, skin: PAL3D.skin, variant: 'princess' },
       dialogs: [
         "Oh, quelle belle journée ! Les fleurs sont magnifiques.",
@@ -243,7 +380,7 @@ function buildWorld(scene) {
       ]
     },
     {
-      id: 'yoshi', name: 'Yoshi', x: 10, z: 12,
+      id: 'yoshi', name: 'Yoshi', x: 28, z: 10,
       colors: { cap: 0x5dc14f, shirt: 0x5dc14f, pants: PAL3D.white, skin: 0x5dc14f, variant: 'yoshi' },
       dialogs: [
         "Yoshi yoshi ! (Salut l'ami !)",
@@ -252,12 +389,57 @@ function buildWorld(scene) {
       ]
     },
     {
-      id: 'shyguy', name: 'Maskass', x: -12, z: -10,
+      id: 'shyguy', name: 'Maskass', x: -20, z: -18,
       colors: { cap: 0xb02020, shirt: 0xb02020, pants: 0x602020, skin: 0xe8a080, variant: 'shy' },
       dialogs: [
         "...",
         "(Il te fait un signe timide)",
         "J'aime bien ta casquette."
+      ]
+    },
+    {
+      id: 'bowser', name: 'Bowser', x: -24, z: -28,
+      colors: { cap: 0xc02020, shirt: 0xffa040, pants: 0x2a7a1a, skin: 0xffc070, variant: 'bowser' },
+      dialogs: [
+        "GWAHAHA ! Mes pics sont terrifiants, non ?",
+        "Kidnapper Peach, c'est tellement démodé. J'essaie le jardinage.",
+        "Si tu oses approcher de mon château, prépare-toi !"
+      ]
+    },
+    {
+      id: 'daisy', name: 'Daisy', x: 4, z: 4,
+      colors: { cap: 0xffa020, shirt: 0xffa020, pants: PAL3D.white, skin: PAL3D.skin, variant: 'daisy' },
+      dialogs: [
+        "Salut ! Les fleurs de Sarasaland sont magnifiques aussi !",
+        "On fait une partie de tennis un de ces jours ?",
+        "Hi, I'm Daisy !"
+      ]
+    },
+    {
+      id: 'bowserjr', name: 'Bowser Jr.', x: -18, z: -25,
+      colors: { cap: 0xc02020, shirt: 0xffa040, pants: 0x2a7a1a, skin: 0xffc070, variant: 'bowser' },
+      dialogs: [
+        "Je serai le meilleur roi un jour !",
+        "Papa m'apprend à peindre avec un pinceau magique.",
+        "Mario, t'as pas intérêt à embêter mon papa !"
+      ]
+    },
+    {
+      id: 'dk', name: 'Donkey Kong', x: 30, z: -10,
+      colors: { cap: PAL3D.red, shirt: PAL3D.red, pants: 0x5a3a1a, skin: 0x6a3a1a, variant: 'dk' },
+      dialogs: [
+        "BANANES ! J'adore les bananes !",
+        "Ooh ooh aah aah !",
+        "DK Rap : He's the leader of the bunch !"
+      ]
+    },
+    {
+      id: 'wario', name: 'Wario', x: 12, z: -22,
+      colors: { cap: PAL3D.yellow, shirt: PAL3D.yellow, pants: 0x7020a0, skin: PAL3D.skin },
+      dialogs: [
+        "Wario, number ONE !",
+        "Tu as des pièces ? Donne-les moi !",
+        "Je suis beaucoup plus fort que Mario, crois-moi."
       ]
     }
   ];
