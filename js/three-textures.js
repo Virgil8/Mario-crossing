@@ -13,123 +13,145 @@ function canvasTex(size, drawFn) {
   return t;
 }
 
-// ---------- Herbe ----------
+// ---------- Herbe (style Animal Crossing : douce, saturée) ----------
 function makeGrassTexture() {
-  return canvasTex(256, (ctx, s) => {
-    // Fond dégradé vert
-    const g = ctx.createLinearGradient(0, 0, 0, s);
-    g.addColorStop(0, '#4fba3a');
-    g.addColorStop(1, '#3a9a2a');
-    ctx.fillStyle = g;
+  return canvasTex(512, (ctx, s) => {
+    // Fond vert saturé uniforme
+    ctx.fillStyle = '#67c04a';
     ctx.fillRect(0, 0, s, s);
-    // Brins d'herbe
-    for (let i = 0; i < 600; i++) {
-      const x = Math.random() * s;
-      const y = Math.random() * s;
-      const h = 2 + Math.random() * 6;
-      const shade = Math.random();
-      ctx.strokeStyle = shade < 0.3 ? '#2a7a1a'
-                     : shade < 0.7 ? '#5dc14f'
-                                   : '#70d862';
+    // Patches vert clair
+    for (let i = 0; i < 60; i++) {
+      const x = Math.random() * s, y = Math.random() * s;
+      const r = 15 + Math.random() * 30;
+      const grd = ctx.createRadialGradient(x, y, 0, x, y, r);
+      grd.addColorStop(0, 'rgba(140, 220, 110, 0.55)');
+      grd.addColorStop(1, 'rgba(140, 220, 110, 0)');
+      ctx.fillStyle = grd;
+      ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+    }
+    // Patches vert foncé
+    for (let i = 0; i < 40; i++) {
+      const x = Math.random() * s, y = Math.random() * s;
+      const r = 10 + Math.random() * 20;
+      const grd = ctx.createRadialGradient(x, y, 0, x, y, r);
+      grd.addColorStop(0, 'rgba(50, 130, 40, 0.4)');
+      grd.addColorStop(1, 'rgba(50, 130, 40, 0)');
+      ctx.fillStyle = grd;
+      ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2); ctx.fill();
+    }
+    // Petits détails subtils (brins discrets)
+    for (let i = 0; i < 150; i++) {
+      ctx.strokeStyle = `rgba(80, 160, 60, ${0.3 + Math.random() * 0.3})`;
       ctx.lineWidth = 1;
+      const x = Math.random() * s, y = Math.random() * s;
       ctx.beginPath();
       ctx.moveTo(x, y);
-      ctx.lineTo(x + (Math.random() - 0.5) * 2, y - h);
+      ctx.lineTo(x, y - 3);
       ctx.stroke();
-    }
-    // Petites fleurs aléatoires
-    for (let i = 0; i < 15; i++) {
-      const x = Math.random() * s, y = Math.random() * s;
-      ctx.fillStyle = ['#ffe400', '#ffffff', '#ffb6d9'][i % 3];
-      ctx.beginPath();
-      ctx.arc(x, y, 1.5, 0, Math.PI * 2);
-      ctx.fill();
     }
   });
 }
 
-// ---------- Briques ----------
+// ---------- Briques (propres et stylisées) ----------
 function makeBrickTexture() {
-  return canvasTex(128, (ctx, s) => {
-    ctx.fillStyle = '#7a3a10';
-    ctx.fillRect(0, 0, s, s);
-    const bw = 32, bh = 16;
-    for (let y = 0; y < s; y += bh) {
-      const offset = (y / bh) % 2 === 0 ? 0 : bw / 2;
-      for (let x = -bw; x < s + bw; x += bw) {
-        const bx = x + offset;
-        // Dégradé brique
-        const grd = ctx.createLinearGradient(bx, y, bx + bw, y + bh);
-        grd.addColorStop(0, '#d88a4a');
-        grd.addColorStop(0.5, '#c76b2a');
-        grd.addColorStop(1, '#a04a10');
-        ctx.fillStyle = grd;
-        ctx.fillRect(bx + 1, y + 1, bw - 2, bh - 2);
-        // Variations
-        if (Math.random() < 0.3) {
-          ctx.fillStyle = 'rgba(0,0,0,0.15)';
-          ctx.fillRect(bx + 2 + Math.random() * 10, y + 3, 4 + Math.random() * 8, 2);
-        }
-      }
-    }
-  });
-}
-
-// ---------- Bois ----------
-function makeWoodTexture() {
-  return canvasTex(128, (ctx, s) => {
-    ctx.fillStyle = '#b98850';
-    ctx.fillRect(0, 0, s, s);
-    // Veines
-    for (let i = 0; i < 8; i++) {
-      const y = (i / 8) * s + Math.random() * 4;
-      ctx.strokeStyle = `rgba(80, 40, 10, ${0.2 + Math.random() * 0.3})`;
-      ctx.lineWidth = 1 + Math.random() * 2;
-      ctx.beginPath();
-      ctx.moveTo(0, y);
-      for (let x = 0; x < s; x += 4) {
-        ctx.lineTo(x, y + Math.sin(x * 0.1 + i) * 3);
-      }
-      ctx.stroke();
-    }
-    // Noeuds du bois
-    for (let i = 0; i < 3; i++) {
-      const x = Math.random() * s, y = Math.random() * s;
-      const r = 3 + Math.random() * 4;
-      const grd = ctx.createRadialGradient(x, y, 0, x, y, r);
-      grd.addColorStop(0, '#5a3010');
-      grd.addColorStop(1, 'rgba(90, 48, 16, 0)');
-      ctx.fillStyle = grd;
-      ctx.beginPath();
-      ctx.arc(x, y, r, 0, Math.PI * 2);
-      ctx.fill();
-    }
-  });
-}
-
-// ---------- Pierre (chemin) ----------
-function makeStoneTexture() {
   return canvasTex(256, (ctx, s) => {
-    ctx.fillStyle = '#e8c99b';
+    // Fond joint clair
+    ctx.fillStyle = '#8a6040';
     ctx.fillRect(0, 0, s, s);
-    // Pavés irréguliers
-    for (let i = 0; i < 30; i++) {
-      const x = Math.random() * s, y = Math.random() * s;
-      const w = 20 + Math.random() * 25;
-      const h = 20 + Math.random() * 25;
-      const shade = 180 + Math.random() * 50;
-      ctx.fillStyle = `rgb(${shade - 20}, ${shade - 40}, ${shade - 70})`;
-      ctx.beginPath();
-      ctx.ellipse(x, y, w / 2, h / 2, Math.random() * Math.PI, 0, Math.PI * 2);
-      ctx.fill();
-      ctx.strokeStyle = 'rgba(80, 60, 30, 0.3)';
-      ctx.lineWidth = 1;
-      ctx.stroke();
+    const bw = 64, bh = 32;
+    for (let y = 0; y < s; y += bh) {
+      const off = (y / bh) % 2 === 0 ? 0 : bw / 2;
+      for (let x = -bw; x < s + bw; x += bw) {
+        const bx = x + off;
+        // Couleur brique variée
+        const hue = 18 + Math.random() * 8;
+        const lum = 45 + Math.random() * 10;
+        // Dégradé doux
+        const grd = ctx.createLinearGradient(bx, y, bx, y + bh);
+        grd.addColorStop(0, `hsl(${hue}, 60%, ${lum + 10}%)`);
+        grd.addColorStop(0.5, `hsl(${hue}, 65%, ${lum}%)`);
+        grd.addColorStop(1, `hsl(${hue}, 55%, ${lum - 5}%)`);
+        ctx.fillStyle = grd;
+        // Brique arrondie
+        const r = 4;
+        ctx.beginPath();
+        ctx.moveTo(bx + r + 2, y + 3);
+        ctx.arcTo(bx + bw - 2, y + 3, bx + bw - 2, y + bh - 3, r);
+        ctx.arcTo(bx + bw - 2, y + bh - 3, bx + 2, y + bh - 3, r);
+        ctx.arcTo(bx + 2, y + bh - 3, bx + 2, y + 3, r);
+        ctx.arcTo(bx + 2, y + 3, bx + bw - 2, y + 3, r);
+        ctx.closePath();
+        ctx.fill();
+        // Reflet en haut
+        ctx.fillStyle = `hsla(${hue}, 70%, 75%, 0.3)`;
+        ctx.fillRect(bx + 4, y + 4, bw - 8, 3);
+      }
     }
-    // Grain
-    for (let i = 0; i < 500; i++) {
-      ctx.fillStyle = `rgba(0,0,0,${Math.random() * 0.1})`;
-      ctx.fillRect(Math.random() * s, Math.random() * s, 1, 1);
+  });
+}
+
+// ---------- Bois (planches propres) ----------
+function makeWoodTexture() {
+  return canvasTex(256, (ctx, s) => {
+    // Planches verticales
+    const plankW = 64;
+    for (let x = 0; x < s; x += plankW) {
+      // Couleur variée par planche
+      const hue = 28 + Math.random() * 10;
+      const sat = 45 + Math.random() * 15;
+      const lum = 50 + Math.random() * 10;
+      ctx.fillStyle = `hsl(${hue}, ${sat}%, ${lum}%)`;
+      ctx.fillRect(x, 0, plankW, s);
+      // Veines douces
+      for (let i = 0; i < 5; i++) {
+        ctx.strokeStyle = `hsla(${hue}, 60%, 35%, 0.15)`;
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
+        const yOff = (i / 5) * s;
+        for (let y = 0; y < s; y += 2) {
+          const vx = x + plankW / 2 + Math.sin(y * 0.05 + i) * (plankW * 0.3);
+          if (y === 0) ctx.moveTo(vx, y); else ctx.lineTo(vx, y);
+        }
+        ctx.stroke();
+      }
+      // Joint foncé entre planches
+      ctx.fillStyle = 'rgba(60, 30, 10, 0.5)';
+      ctx.fillRect(x + plankW - 2, 0, 2, s);
+    }
+  });
+}
+
+// ---------- Pierre (dalles propres style AC) ----------
+function makeStoneTexture() {
+  return canvasTex(512, (ctx, s) => {
+    ctx.fillStyle = '#f0d9a8';
+    ctx.fillRect(0, 0, s, s);
+    // Dalles régulières avec léger décalage
+    const dw = 120, dh = 80;
+    for (let y = -dh; y < s + dh; y += dh) {
+      const off = (Math.floor(y / dh) % 2) * (dw / 2);
+      for (let x = -dw; x < s + dw; x += dw) {
+        const dx = x + off, dy = y;
+        // Couleur légèrement variée
+        const hue = 35 + Math.random() * 10;
+        const sat = 35 + Math.random() * 15;
+        const lum = 70 + Math.random() * 10;
+        ctx.fillStyle = `hsl(${hue}, ${sat}%, ${lum}%)`;
+        // Dalle arrondie
+        const r = 8;
+        ctx.beginPath();
+        ctx.moveTo(dx + r + 3, dy + 3);
+        ctx.arcTo(dx + dw - 3, dy + 3, dx + dw - 3, dy + dh - 3, r);
+        ctx.arcTo(dx + dw - 3, dy + dh - 3, dx + 3, dy + dh - 3, r);
+        ctx.arcTo(dx + 3, dy + dh - 3, dx + 3, dy + 3, r);
+        ctx.arcTo(dx + 3, dy + 3, dx + dw - 3, dy + 3, r);
+        ctx.closePath();
+        ctx.fill();
+        // Ombre du joint
+        ctx.strokeStyle = 'rgba(100, 70, 30, 0.2)';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      }
     }
   });
 }

@@ -61,14 +61,21 @@ function init3D() {
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
   renderer.outputEncoding = THREE.sRGBEncoding;
 
-  // Lumière
-  hemiLight = new THREE.HemisphereLight(0xfff7d6, 0x4a7a2a, 0.75);
+  // Éclairage doux style Animal Crossing
+  hemiLight = new THREE.HemisphereLight(0xfff5d6, 0x5a9a3a, 0.95);
   scene.add(hemiLight);
 
-  sunLight = new THREE.DirectionalLight(0xffffff, 1.1);
-  sunLight.position.set(15, 25, 10);
+  // Lumière ambiante douce (remplit les ombres)
+  const ambient = new THREE.AmbientLight(0xfff0e0, 0.3);
+  scene.add(ambient);
+
+  sunLight = new THREE.DirectionalLight(0xfff8e8, 1.3);
+  sunLight.position.set(20, 30, 15);
   sunLight.castShadow = true;
   sunLight.shadow.mapSize.set(2048, 2048);
+  sunLight.shadow.bias = -0.0005;
+  sunLight.shadow.normalBias = 0.05;
+  sunLight.shadow.radius = 4;
   const sc = sunLight.shadow.camera;
   sc.left = -50; sc.right = 50; sc.top = 50; sc.bottom = -50;
   sc.near = 0.1; sc.far = 150;
@@ -77,10 +84,8 @@ function init3D() {
   // Monde
   buildWorld(scene);
 
-  // Joueur
-  playerMesh = buildCharacter({
-    cap: PAL3D.red, shirt: PAL3D.red, pants: PAL3D.blue, skin: PAL3D.skin
-  });
+  // Joueur : vrai Mario
+  playerMesh = buildMario();
   scene.add(playerMesh);
 
   clock = new THREE.Clock();

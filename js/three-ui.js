@@ -268,11 +268,11 @@ function updateDayNight() {
   let ambientIntensity = 0.75;
 
   if (h >= 20 || h < 5) {
-    // Nuit
-    intensity = 0.15;
-    skyColor = 0x1a2850;
-    fogColor = 0x1a2850;
-    ambientIntensity = 0.3;
+    // Nuit — bleue douce avec un peu de lune
+    intensity = 0.25;
+    skyColor = 0x1e2d5a;
+    fogColor = 0x1a2a50;
+    ambientIntensity = 0.55;
   } else if (h >= 5 && h < 7) {
     // Aube
     const t = (h - 5) / 2;

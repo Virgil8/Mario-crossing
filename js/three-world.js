@@ -445,18 +445,36 @@ function buildWorld(scene) {
   ];
 
   for (const def of npcDefs) {
-    const mesh = buildCharacter(def.colors);
+    const mesh = buildNPCMesh(def.id, def.colors);
     mesh.position.set(def.x, 0, def.z);
     mesh.rotation.y = Math.atan2(-def.x, -def.z);
     scene.add(mesh);
 
-    // Étiquette de nom (sprite)
     const label = makeNameLabel(def.name);
-    label.position.set(0, 2.2, 0);
+    const labelY = def.id === 'bowser' ? 2.6 : def.id === 'dk' ? 2.2 : 2.2;
+    label.position.set(0, labelY, 0);
     mesh.add(label);
 
     NPCS_3D.push({ ...def, mesh, idleTimer: Math.random() * 2 });
-    COLLIDERS.push({ x: def.x, z: def.z, radius: 0.4, type: 'npc' });
+    COLLIDERS.push({ x: def.x, z: def.z, radius: 0.5, type: 'npc' });
+  }
+}
+
+// Dispatcher : crée le bon modèle selon le PNJ
+function buildNPCMesh(id, fallbackColors) {
+  switch (id) {
+    case 'mario':    return buildMario();
+    case 'luigi':    return buildLuigi();
+    case 'wario':    return buildWario();
+    case 'peach':    return buildPeach();
+    case 'daisy':    return buildDaisy();
+    case 'toad':     return buildToadChar();
+    case 'yoshi':    return buildYoshiChar();
+    case 'bowser':   return buildBowserChar(1.2);
+    case 'bowserjr': return buildBowserJr();
+    case 'dk':       return buildGorilla();
+    case 'shyguy':   return buildShyGuyChar();
+    default:         return buildCharacter(fallbackColors);
   }
 }
 
