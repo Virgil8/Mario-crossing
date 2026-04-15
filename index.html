@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mario Crossing</title>
+  <title>Mario Crossing 3D</title>
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <div id="game-wrapper">
-    <canvas id="game" width="768" height="576"></canvas>
+    <canvas id="game"></canvas>
 
     <!-- HUD -->
     <div id="hud">
@@ -49,7 +49,7 @@
 
     <!-- Menu titre -->
     <div id="title-screen">
-      <h1>🍄 Mario Crossing 🍄</h1>
+      <h1>🍄 Mario Crossing 3D 🍄</h1>
       <p class="subtitle">Une vie paisible dans le Royaume Champignon</p>
       <button id="start-btn">Commencer l'aventure</button>
       <button id="reset-btn">Nouvelle partie</button>
@@ -58,21 +58,24 @@
         <ul>
           <li><b>ZQSD / Flèches</b> : se déplacer</li>
           <li><b>Espace / E</b> : interagir / parler</li>
+          <li><b>Souris droite (drag)</b> : orienter la caméra</li>
+          <li><b>Molette</b> : zoom</li>
           <li><b>1-5</b> : changer d'outil</li>
-          <li><b>I</b> : inventaire</li>
-          <li><b>Maj</b> : courir</li>
+          <li><b>I</b> : inventaire · <b>Maj</b> : courir</li>
         </ul>
       </div>
     </div>
 
-    <!-- Indicateur météo / notifications -->
+    <!-- Notifications -->
     <div id="toast" class="hidden"></div>
   </div>
 
-  <script src="js/assets.js"></script>
-  <script src="js/world.js"></script>
-  <script src="js/entities.js"></script>
-  <script src="js/ui.js"></script>
-  <script src="js/game.js"></script>
+  <!-- Three.js -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.148.0/build/three.min.js"></script>
+
+  <script src="js/three-assets.js"></script>
+  <script src="js/three-world.js"></script>
+  <script src="js/three-game.js"></script>
+  <script src="js/three-ui.js"></script>
 </body>
 </html>
