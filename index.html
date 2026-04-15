@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mario Crossing</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="game-wrapper">
+    <canvas id="game" width="768" height="576"></canvas>
+
+    <!-- HUD -->
+    <div id="hud">
+      <div id="clock">
+        <span id="time">08:00</span>
+        <span id="day">Jour 1</span>
+      </div>
+      <div id="wallet">
+        <span class="coin">🪙</span>
+        <span id="coins">0</span>
+      </div>
+      <div id="tool-indicator">
+        <span class="label">Outil :</span>
+        <span id="current-tool">Aucun</span>
+      </div>
+    </div>
+
+    <!-- Dialogue -->
+    <div id="dialog" class="hidden">
+      <div id="dialog-speaker"></div>
+      <div id="dialog-text"></div>
+      <div id="dialog-hint">▼ Espace</div>
+    </div>
+
+    <!-- Inventaire -->
+    <div id="inventory" class="hidden">
+      <h2>🎒 Sac à dos</h2>
+      <div id="inventory-grid"></div>
+      <div id="inventory-hint">[I] Fermer · [Clic] Utiliser · [Clic droit] Jeter</div>
+    </div>
+
+    <!-- Boutique -->
+    <div id="shop" class="hidden">
+      <h2>🍄 Boutique de Toad</h2>
+      <div id="shop-sell-list"></div>
+      <button id="shop-close">Fermer</button>
+    </div>
+
+    <!-- Menu titre -->
+    <div id="title-screen">
+      <h1>🍄 Mario Crossing 🍄</h1>
+      <p class="subtitle">Une vie paisible dans le Royaume Champignon</p>
+      <button id="start-btn">Commencer l'aventure</button>
+      <button id="reset-btn">Nouvelle partie</button>
+      <div class="controls">
+        <h3>Contrôles</h3>
+        <ul>
+          <li><b>ZQSD / Flèches</b> : se déplacer</li>
+          <li><b>Espace / E</b> : interagir / parler</li>
+          <li><b>1-5</b> : changer d'outil</li>
+          <li><b>I</b> : inventaire</li>
+          <li><b>Maj</b> : courir</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- Indicateur météo / notifications -->
+    <div id="toast" class="hidden"></div>
+  </div>
+
+  <script src="js/assets.js"></script>
+  <script src="js/world.js"></script>
+  <script src="js/entities.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>

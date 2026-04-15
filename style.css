@@ -1,0 +1,357 @@
+/* ============================================
+   Mario Crossing - Styles
+   ============================================ */
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  height: 100%;
+  font-family: 'Trebuchet MS', 'Comic Sans MS', sans-serif;
+  background: #1a1a2e;
+  color: #fff;
+  overflow: hidden;
+  user-select: none;
+}
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: radial-gradient(ellipse at center, #2d4a7c 0%, #0f1424 100%);
+}
+
+#game-wrapper {
+  position: relative;
+  width: 768px;
+  height: 576px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6), 0 0 0 4px #e52521;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+canvas#game {
+  display: block;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  background: #87ceeb;
+  width: 100%;
+  height: 100%;
+}
+
+/* ==================== HUD ==================== */
+
+#hud {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  right: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  pointer-events: none;
+  z-index: 10;
+}
+
+#hud > div {
+  background: linear-gradient(to bottom, #fff 0%, #f0f0f0 100%);
+  color: #222;
+  padding: 8px 14px;
+  border-radius: 20px;
+  border: 3px solid #e52521;
+  font-weight: bold;
+  box-shadow: 0 3px 0 rgba(0,0,0,0.3);
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+#clock { flex-direction: column; align-items: flex-start; gap: 2px; }
+#clock #time { font-size: 18px; color: #e52521; }
+#clock #day { font-size: 12px; color: #555; }
+
+#wallet .coin { font-size: 20px; }
+#wallet #coins { font-size: 18px; color: #c88a1a; }
+
+#tool-indicator .label { font-size: 11px; color: #888; }
+#tool-indicator #current-tool { color: #0066cc; }
+
+/* ==================== Dialogue ==================== */
+
+#dialog {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  background: linear-gradient(to bottom, #fffbe6 0%, #ffe89a 100%);
+  color: #3a2a0a;
+  border: 4px solid #a0522d;
+  border-radius: 12px;
+  padding: 16px 20px;
+  min-height: 90px;
+  box-shadow: 0 6px 0 rgba(0,0,0,0.4);
+  z-index: 20;
+  font-size: 16px;
+}
+
+#dialog-speaker {
+  font-weight: bold;
+  color: #c62828;
+  margin-bottom: 6px;
+  font-size: 15px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+#dialog-text {
+  line-height: 1.4;
+  min-height: 42px;
+}
+
+#dialog-hint {
+  position: absolute;
+  bottom: 6px;
+  right: 14px;
+  font-size: 11px;
+  color: #a0522d;
+  animation: blink 1s infinite;
+}
+
+@keyframes blink {
+  0%, 50% { opacity: 1; }
+  51%, 100% { opacity: 0.2; }
+}
+
+/* ==================== Inventaire ==================== */
+
+#inventory {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(to bottom, #3a7dc8, #2158a8);
+  border: 4px solid #fff;
+  border-radius: 16px;
+  padding: 20px;
+  width: 480px;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.7);
+  z-index: 30;
+}
+
+#inventory h2 {
+  text-align: center;
+  margin-bottom: 14px;
+  text-shadow: 2px 2px 0 rgba(0,0,0,0.4);
+}
+
+#inventory-grid {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 8px;
+}
+
+.inv-slot {
+  background: rgba(255, 255, 255, 0.2);
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-radius: 8px;
+  aspect-ratio: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  cursor: pointer;
+  position: relative;
+  transition: transform 0.1s;
+}
+.inv-slot:hover:not(.empty) {
+  transform: scale(1.08);
+  background: rgba(255, 255, 255, 0.35);
+}
+.inv-slot.empty { opacity: 0.3; cursor: default; }
+.inv-slot .qty {
+  position: absolute;
+  bottom: 2px;
+  right: 4px;
+  font-size: 12px;
+  background: rgba(0,0,0,0.6);
+  padding: 1px 5px;
+  border-radius: 8px;
+  font-weight: bold;
+}
+.inv-slot.selected {
+  border-color: #ffe400;
+  box-shadow: 0 0 12px #ffe400;
+}
+
+#inventory-hint {
+  text-align: center;
+  margin-top: 12px;
+  font-size: 12px;
+  opacity: 0.85;
+}
+
+/* ==================== Boutique ==================== */
+
+#shop {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: linear-gradient(to bottom, #fff, #ffe4cc);
+  color: #3a2a0a;
+  border: 4px solid #e52521;
+  border-radius: 16px;
+  padding: 20px;
+  width: 440px;
+  max-height: 480px;
+  overflow-y: auto;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.7);
+  z-index: 30;
+}
+
+#shop h2 { text-align: center; margin-bottom: 14px; color: #e52521; }
+
+.shop-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  margin: 6px 0;
+  background: rgba(255, 255, 255, 0.7);
+  border: 2px solid #a0522d;
+  border-radius: 8px;
+}
+.shop-item button {
+  background: #4caf50;
+  color: white;
+  border: none;
+  padding: 6px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: bold;
+}
+.shop-item button:hover { background: #45a049; }
+
+#shop-close {
+  width: 100%;
+  padding: 10px;
+  margin-top: 12px;
+  background: #e52521;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+/* ==================== Titre ==================== */
+
+#title-screen {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, #87ceeb 0%, #5dade2 50%, #2d7e3e 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 30px;
+}
+
+#title-screen h1 {
+  font-size: 54px;
+  color: #fff;
+  text-shadow:
+    4px 4px 0 #e52521,
+    -1px -1px 0 #000,
+    1px 1px 0 #000;
+  margin-bottom: 8px;
+  animation: bounce 2s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+.subtitle {
+  font-size: 16px;
+  color: #fff;
+  text-shadow: 2px 2px 0 #000;
+  margin-bottom: 30px;
+  font-style: italic;
+}
+
+#title-screen button {
+  padding: 14px 36px;
+  margin: 6px;
+  background: linear-gradient(to bottom, #ffe400, #e8b800);
+  border: 3px solid #8a6400;
+  border-radius: 30px;
+  font-size: 18px;
+  font-weight: bold;
+  color: #5a3a00;
+  cursor: pointer;
+  box-shadow: 0 4px 0 #8a6400;
+  transition: transform 0.1s;
+}
+#title-screen button:hover { transform: translateY(-2px); }
+#title-screen button:active { transform: translateY(2px); box-shadow: 0 2px 0 #8a6400; }
+
+#reset-btn {
+  background: linear-gradient(to bottom, #ff8888, #cc4444) !important;
+  color: white !important;
+  font-size: 14px !important;
+  padding: 8px 20px !important;
+}
+
+.controls {
+  margin-top: 30px;
+  background: rgba(0, 0, 0, 0.5);
+  padding: 14px 22px;
+  border-radius: 10px;
+  color: #fff;
+  font-size: 13px;
+}
+.controls h3 { margin-bottom: 6px; text-align: center; }
+.controls ul { list-style: none; }
+.controls li { padding: 2px 0; }
+.controls b { color: #ffe400; }
+
+/* ==================== Toast ==================== */
+
+#toast {
+  position: absolute;
+  top: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0, 0, 0, 0.85);
+  color: #ffe400;
+  padding: 10px 24px;
+  border-radius: 20px;
+  border: 2px solid #ffe400;
+  font-weight: bold;
+  z-index: 50;
+  animation: toast-in 0.3s ease-out;
+}
+
+@keyframes toast-in {
+  from { opacity: 0; transform: translate(-50%, -20px); }
+  to { opacity: 1; transform: translate(-50%, 0); }
+}
+
+.hidden { display: none !important; }
+
+/* ==================== Cycle jour/nuit ==================== */
+
+.night-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: rgba(20, 30, 80, 0);
+  transition: background 2s;
+  z-index: 5;
+  mix-blend-mode: multiply;
+}
